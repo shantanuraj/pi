@@ -414,6 +414,7 @@ export class InteractiveMode {
 
 	private lastSigintTime = 0;
 	private lastEscapeTime = 0;
+	private abortTurnConfirmationActive = false;
 	private changelogMarkdown: string | undefined = undefined;
 	private startupNoticesShown = false;
 	private anthropicSubscriptionWarningShown = false;
@@ -2846,12 +2847,52 @@ export class InteractiveMode {
 	// Key Handlers
 	// =========================================================================
 
+	private async confirmAbortStreamingTurn(): Promise<void> {
+		if (this.abortTurnConfirmationActive) {
+			return;
+		}
+
+		const activeSignal = this.agent.signal;
+		if (!activeSignal) {
+			return;
+		}
+
+		this.abortTurnConfirmationActive = true;
+		const dialogAbortController = new AbortController();
+		void this.agent.waitForIdle().then(
+			() => dialogAbortController.abort(),
+			() => dialogAbortController.abort(),
+		);
+
+		try {
+			const abortOption = "Abort turn";
+			const choice = await this.showExtensionSelector(
+				"Abort current turn?\nPi is still working. Aborting stops the response and restores queued messages to the editor.",
+				["Keep working", abortOption],
+				{ signal: dialogAbortController.signal },
+			);
+
+			if (choice !== abortOption) {
+				return;
+			}
+
+			if (this.agent.signal !== activeSignal || !this.session.isStreaming) {
+				this.showStatus("Current turn already finished");
+				return;
+			}
+
+			this.restoreQueuedMessagesToEditor({ abort: true });
+		} finally {
+			this.abortTurnConfirmationActive = false;
+		}
+	}
+
 	private setupKeyHandlers(): void {
 		// Set up handlers on defaultEditor - they use this.editor for text access
 		// so they work correctly regardless of which editor is active
 		this.defaultEditor.onEscape = () => {
 			if (this.session.isStreaming) {
-				this.restoreQueuedMessagesToEditor({ abort: true });
+				void this.confirmAbortStreamingTurn();
 			} else if (this.session.isBashRunning) {
 				this.session.abortBash();
 			} else if (this.isBashMode) {
@@ -6379,7 +6420,7 @@ export class InteractiveMode {
 | Key | Action |
 |-----|--------|
 | \`${tab}\` | Path completion / accept autocomplete |
-| \`${interrupt}\` | Cancel autocomplete / abort streaming |
+| \`${interrupt}\` | Cancel autocomplete / confirm abort |
 | \`${clear}\` | Clear editor (first) / exit (second) |
 | \`${exit}\` | Exit (when editor is empty) |
 | \`${suspend}\` | Suspend to background |
