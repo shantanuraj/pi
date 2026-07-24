@@ -93,8 +93,8 @@ describe("createAgentSession client identity", () => {
 		} = {},
 	): Promise<SimpleStreamOptions | undefined> {
 		const settingsManager = SettingsManager.create(cwd, agentDir);
-		if (options.telemetryEnabled === false) {
-			settingsManager.setEnableInstallTelemetry(false);
+		if (options.telemetryEnabled !== undefined) {
+			settingsManager.setEnableInstallTelemetry(options.telemetryEnabled);
 		}
 
 		const authStorage = AuthStorage.inMemory({
@@ -139,9 +139,9 @@ describe("createAgentSession client identity", () => {
 		}
 	}
 
-	it("identifies pi with a detailed User-Agent and attribution as a CLI agent", async () => {
+	it("identifies pi with a detailed User-Agent and attribution when telemetry is enabled", async () => {
 		const model = createModel("openrouter", "https://openrouter.ai/api/v1");
-		const options = await captureOptions(model);
+		const options = await captureOptions(model, { telemetryEnabled: true });
 
 		expect(options?.identity).toEqual({
 			userAgent: "detailed",
@@ -155,6 +155,14 @@ describe("createAgentSession client identity", () => {
 		});
 	});
 
+	it("leaves attribution off by default", async () => {
+		const model = createModel("openrouter", "https://openrouter.ai/api/v1");
+		const options = await captureOptions(model);
+
+		expect(options?.identity).toEqual({ userAgent: "detailed", version: VERSION, attribution: null });
+		expect(getAttributionHeaders(model, options?.identity)).toEqual({});
+	});
+
 	it("turns attribution off when telemetry is disabled", async () => {
 		const model = createModel("nvidia", "https://integrate.api.nvidia.com/v1");
 		const options = await captureOptions(model, { telemetryEnabled: false });
@@ -165,7 +173,9 @@ describe("createAgentSession client identity", () => {
 
 	it("turns attribution off with PI_TELEMETRY=0", async () => {
 		process.env.PI_TELEMETRY = "0";
-		const options = await captureOptions(createModel("openrouter", "https://openrouter.ai/api/v1"));
+		const options = await captureOptions(createModel("openrouter", "https://openrouter.ai/api/v1"), {
+			telemetryEnabled: true,
+		});
 
 		expect(options?.identity?.attribution).toBeNull();
 	});
