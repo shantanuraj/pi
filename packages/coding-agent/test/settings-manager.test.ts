@@ -111,6 +111,20 @@ describe("SettingsManager", () => {
 		});
 	});
 
+	describe("privacy defaults", () => {
+		it("defaults telemetry off while preserving explicit opt-in", async () => {
+			const manager = SettingsManager.create(projectDir, agentDir);
+
+			expect(manager.getEnableInstallTelemetry()).toBe(false);
+			manager.setEnableInstallTelemetry(true);
+			await manager.flush();
+
+			expect(manager.getEnableInstallTelemetry()).toBe(true);
+			const savedSettings = JSON.parse(readFileSync(join(agentDir, "settings.json"), "utf-8"));
+			expect(savedSettings.enableInstallTelemetry).toBe(true);
+		});
+	});
+
 	describe("packages migration", () => {
 		it("should keep local-only extensions in extensions array", () => {
 			const settingsPath = join(agentDir, "settings.json");

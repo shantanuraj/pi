@@ -312,7 +312,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
 Pi has two separate startup features:
 
 - **Update check:** fetches `https://pi.dev/api/latest-version` to check whether a newer Pi version exists. Disable it with `PI_SKIP_VERSION_CHECK=1`. Disabling update checks only turns off this check.
-- **Install/update telemetry:** after first install or a changelog-detected update, sends an anonymous version ping to `https://pi.dev/api/report-install`. This setting also controls optional provider attribution headers for OpenRouter, Cloudflare, and direct NVIDIA NIM requests. Opt out by setting `enableInstallTelemetry` to `false` in `settings.json`, or by setting `PI_TELEMETRY=0`. This does not disable update checks; Pi may still contact `pi.dev` for the latest version unless update checks are disabled or offline mode is enabled.
+- **Install/update telemetry:** disabled by default. Opt in by setting `enableInstallTelemetry` to `true` in `settings.json`, or by setting `PI_TELEMETRY=1`. After first install or a changelog-detected update, this sends an anonymous version ping to `https://pi.dev/api/report-install`. The same setting controls optional provider attribution headers for OpenRouter, Cloudflare, and direct NVIDIA NIM requests. This does not disable update checks; Pi may still contact `pi.dev` unless update checks or offline mode are enabled.
 
 Use `--offline` or `PI_OFFLINE=1` to disable all startup network operations described here, including update checks, package update checks, and install/update telemetry.
 
