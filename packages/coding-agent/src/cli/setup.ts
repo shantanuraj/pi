@@ -5,6 +5,7 @@ export function setupCli(): void {
 	process.title = APP_NAME;
 	process.env.PI_CODING_AGENT = "true";
 	process.env.AI_AGENT = "pi";
+	process.env.PI_SKIP_VERSION_CHECK ??= "1";
 	process.emitWarning = (() => {}) as typeof process.emitWarning;
 
 	// Configure undici before provider SDKs issue requests. Settings are applied

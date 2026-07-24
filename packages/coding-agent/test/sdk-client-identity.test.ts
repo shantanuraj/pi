@@ -8,7 +8,6 @@ import {
 	getAttributionHeaders,
 	type Model,
 	normalizeContext,
-	PI_ATTRIBUTION,
 	type SimpleStreamOptions,
 } from "@earendil-works/pi-ai";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -127,39 +126,31 @@ describe("createAgentSession client identity", () => {
 		}
 	}
 
-	it("identifies pi with a detailed User-Agent and attribution as a CLI agent", async () => {
+	it("identifies pi with a detailed User-Agent without attribution", async () => {
 		const model = createModel("openrouter", "https://openrouter.ai/api/v1");
 		const options = await captureOptions(model);
 
 		expect(options?.identity).toEqual({
 			userAgent: "detailed",
 			version: VERSION,
-			attribution: PI_ATTRIBUTION,
+			attribution: null,
 		});
-		expect(getAttributionHeaders(model, options?.identity)).toEqual({
-			"HTTP-Referer": "https://pi.dev",
-			"X-OpenRouter-Title": "pi",
-			"X-OpenRouter-Categories": "cli-agent",
-		});
+		expect(getAttributionHeaders(model, options?.identity)).toEqual({});
 	});
 
-	it("always sends provider attribution headers", async () => {
+	it("omits provider attribution headers", async () => {
 		const nvidiaModel = createModel("nvidia", "https://integrate.api.nvidia.com/v1");
 		const nvidiaOptions = await captureOptions(nvidiaModel);
 		expect(nvidiaOptions?.identity).toEqual({
 			userAgent: "detailed",
 			version: VERSION,
-			attribution: PI_ATTRIBUTION,
+			attribution: null,
 		});
-		expect(getAttributionHeaders(nvidiaModel, nvidiaOptions?.identity)).toEqual({
-			"X-BILLING-INVOKE-ORIGIN": "Pi",
-		});
+		expect(getAttributionHeaders(nvidiaModel, nvidiaOptions?.identity)).toEqual({});
 
 		const opencodeModel = createModel("opencode", "https://opencode.ai/zen/v1");
 		const opencodeOptions = await captureOptions(opencodeModel);
-		expect(getAttributionHeaders(opencodeModel, opencodeOptions?.identity)).toEqual({
-			"x-opencode-client": "pi",
-		});
+		expect(getAttributionHeaders(opencodeModel, opencodeOptions?.identity)).toEqual({});
 	});
 
 	it("adds OpenCode session headers for custom OpenCode providers", async () => {
