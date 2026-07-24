@@ -1211,6 +1211,8 @@ export class InteractiveMode {
 	 * Only shows new entries since last seen version, skips for resumed sessions.
 	 */
 	private getChangelogForDisplay(): string | undefined {
+		if (process.env.PI_SKIP_VERSION_CHECK) return undefined;
+
 		// Skip changelog for resumed/continued sessions (already have messages)
 		if (this.session.state.messages.length > 0) {
 			return undefined;
