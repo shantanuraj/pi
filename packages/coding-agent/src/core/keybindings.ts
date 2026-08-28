@@ -25,6 +25,7 @@ export interface AppKeybindings {
 	"app.thinking.toggle": true;
 	"app.session.toggleNamedFilter": true;
 	"app.editor.external": true;
+	"app.editor.externalAssistant": true;
 	"app.message.copy": true;
 	"app.message.followUp": true;
 	"app.message.dequeue": true;
@@ -127,6 +128,10 @@ export const KEYBINDINGS = {
 	"app.editor.external": {
 		defaultKeys: "ctrl+g",
 		description: "Open external editor",
+	},
+	"app.editor.externalAssistant": {
+		defaultKeys: "ctrl+shift+g",
+		description: "Open last assistant message in external editor",
 	},
 	"app.message.copy": {
 		defaultKeys: "ctrl+x",
