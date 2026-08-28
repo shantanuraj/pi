@@ -61,7 +61,7 @@ Pi saves sessions automatically unless session persistence is disabled.
 - `/name` gives the current session a recognizable name.
 - `/session` shows its file, ID, message count, token usage, and cost.
 
-Use `/tree`, `/fork`, or `/clone` when you want to explore another approach without losing existing work. Use `/compact` to reduce the conversation history sent to the model. See [Sessions and Context](sessions.md) for these workflows.
+Use `/tree`, `/fork`, or `/clone` when you want to explore another approach without losing existing work. While browsing `/tree`, press `Ctrl+G` to open a copy of the selected entry in the external editor; changes are not written back to the session. Use `/compact` to reduce the conversation history sent to the model. See [Sessions and Context](sessions.md) for these workflows.
 
 After leaving Pi, run `pi --continue` from the same folder to resume its most recent session.
 
