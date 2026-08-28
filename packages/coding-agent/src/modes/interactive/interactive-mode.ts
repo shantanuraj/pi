@@ -154,7 +154,11 @@ import { TrustSelectorComponent } from "./components/trust-selector.ts";
 import { UserMessageComponent } from "./components/user-message.ts";
 import { UserMessageSelectorComponent } from "./components/user-message-selector.ts";
 import { editInExternalEditor } from "./external-editor.ts";
-import { formatSessionEntryForEditor } from "./message-editor.ts";
+import {
+	formatAssistantMessageForEditor,
+	formatSessionEntryForEditor,
+	getLastAssistantEditorText,
+} from "./message-editor.ts";
 import { refreshModelCatalogs } from "./model-catalog-refresh.ts";
 import { getModelSearchText } from "./model-search.ts";
 import { shareSession } from "./session-share.ts";
@@ -930,6 +934,7 @@ export class InteractiveMode {
 				hint("app.tools.expand", "to expand tools"),
 				hint("app.thinking.toggle", "to expand thinking"),
 				hint("app.editor.external", "for external editor"),
+				hint("app.editor.externalAssistant", "to edit last response"),
 				rawKeyHint("/", "for commands"),
 				rawKeyHint("!", "to run bash"),
 				rawKeyHint("!!", "to run bash (no context)"),
@@ -2933,6 +2938,7 @@ export class InteractiveMode {
 		this.defaultEditor.onAction("app.tools.expand", () => this.toggleToolOutputExpansion());
 		this.defaultEditor.onAction("app.thinking.toggle", () => this.toggleThinkingBlockVisibility());
 		this.defaultEditor.onAction("app.editor.external", () => void this.openExternalEditor());
+		this.defaultEditor.onAction("app.editor.externalAssistant", () => void this.openLastAssistantInExternalEditor());
 		this.defaultEditor.onAction(
 			"app.message.copy",
 			() => void this.handleCopyCommand({ flashConfirmation: true, preferSelection: true }),
@@ -4305,6 +4311,25 @@ export class InteractiveMode {
 	private async openExternalEditor(): Promise<void> {
 		const currentText = this.editor.getExpandedText?.() ?? this.editor.getText();
 		const newContent = await this.openTextInExternalEditor(currentText);
+		if (newContent !== undefined) {
+			this.editor.setText(newContent);
+			this.ui.requestRender();
+		}
+	}
+
+	private async openLastAssistantInExternalEditor(): Promise<void> {
+		const streamingText = this.streamingMessage
+			? formatAssistantMessageForEditor(this.streamingMessage, { includeThinking: !this.hideThinkingBlock })
+			: undefined;
+		const text =
+			streamingText ??
+			getLastAssistantEditorText(this.session.messages, { includeThinking: !this.hideThinkingBlock });
+		if (!text) {
+			this.showStatus("No assistant message to open in external editor");
+			return;
+		}
+
+		const newContent = await this.openTextInExternalEditor(text);
 		if (newContent !== undefined) {
 			this.editor.setText(newContent);
 			this.ui.requestRender();
@@ -6411,6 +6436,7 @@ export class InteractiveMode {
 		const expandTools = this.getAppKeyDisplay("app.tools.expand");
 		const toggleThinking = this.getAppKeyDisplay("app.thinking.toggle");
 		const externalEditor = this.getAppKeyDisplay("app.editor.external");
+		const externalAssistant = this.getAppKeyDisplay("app.editor.externalAssistant");
 		const cycleModelBackward = this.getAppKeyDisplay("app.model.cycleBackward");
 		const copyMessage = this.getAppKeyDisplay("app.message.copy");
 		const followUp = this.getAppKeyDisplay("app.message.followUp");
@@ -6456,6 +6482,7 @@ export class InteractiveMode {
 | \`${expandTools}\` | Toggle tool output expansion |
 | \`${toggleThinking}\` | Toggle thinking block visibility |
 | \`${externalEditor}\` | Edit message in external editor |
+| \`${externalAssistant}\` | Edit last assistant message into current input |
 | \`${copyMessage}\` | Copy last assistant message |
 | \`${followUp}\` | Queue follow-up message |
 | \`${dequeue}\` | Restore queued messages |

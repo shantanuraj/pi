@@ -26,7 +26,7 @@ The editor can be replaced temporarily by built-in UI such as `/settings` or by 
 | Images | Paste with Ctrl+V, Alt+V on Windows, or drag into the terminal |
 | Shell command | `!command` runs and sends output to the model |
 | Hidden shell command | `!!command` runs without sending output to the model |
-| External editor | Ctrl+G edits the current input with `externalEditor`, `$VISUAL`, `$EDITOR`, Notepad on Windows, or `nano` elsewhere |
+| External editor | Ctrl+G edits the current input with `externalEditor`, `$VISUAL`, `$EDITOR`, Notepad on Windows, or `nano` elsewhere; Ctrl+Shift+G edits the last assistant message and puts the saved result in the input editor |
 
 In `/tree`, Ctrl+G opens a copy of the selected entry in the external editor. Changes to opened tree entries are not written back to the session.
 
