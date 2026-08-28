@@ -69,6 +69,12 @@ describe("keybindings migration", () => {
 		});
 	});
 
+	it("uses the external editor default for tree entries", () => {
+		const effective = new KeybindingsManager().getEffectiveConfig();
+
+		expect(effective["app.tree.openExternal"]).toBe("ctrl+g");
+	});
+
 	it("loads old key names in memory before the file is rewritten", () => {
 		const agentDir = createAgentDir({
 			selectConfirm: "enter",

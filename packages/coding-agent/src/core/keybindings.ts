@@ -96,6 +96,10 @@ const APP_KEYBINDINGS = {
 		defaultKeys: "shift+t",
 		description: "Toggle tree label timestamps",
 	},
+	"app.tree.openExternal": {
+		defaultKeys: "ctrl+g",
+		description: "Open selected tree entry in external editor",
+	},
 	"app.session.togglePath": {
 		defaultKeys: "ctrl+p",
 		description: "Toggle session path display",
