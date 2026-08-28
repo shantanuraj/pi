@@ -10,7 +10,7 @@ The transcript shows your prompts, Pi's responses, tool calls, results, and erro
 
 ## Enter a prompt
 
-Type a request and press `Enter` to send it. Use `Shift+Enter` to add a line, or press `Ctrl+G` to work on a longer prompt in your configured external editor.
+Type a request and press `Enter` to send it. Use `Shift+Enter` to add a line, or press `Ctrl+G` to work on a longer prompt in your configured external editor. Press `Ctrl+Shift+G` to edit the last assistant response and place the saved result in the input editor.
 
 To include files or images:
 
