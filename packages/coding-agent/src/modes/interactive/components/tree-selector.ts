@@ -124,6 +124,7 @@ class TreeList implements Component {
 	public onCancel?: () => void;
 	public onCopy?: (text: string | undefined) => void;
 	public onLabelEdit?: (entryId: string, currentLabel: string | undefined) => void;
+	public onOpenExternal?: (entryId: string) => void;
 
 	constructor(
 		tree: SessionTreeNode[],
@@ -1028,6 +1029,11 @@ class TreeList implements Component {
 			}
 		} else if (kb.matches(keyData, "app.message.copy")) {
 			this.copySelected();
+		} else if (kb.matches(keyData, "app.tree.openExternal")) {
+			const selected = this.filteredNodes[this.selectedIndex];
+			if (selected && this.onOpenExternal) {
+				this.onOpenExternal(selected.node.entry.id);
+			}
 		} else if (kb.matches(keyData, "tui.select.cancel")) {
 			if (this.searchQuery) {
 				this.searchQuery = "";
@@ -1221,6 +1227,7 @@ const TREE_HELP_ITEMS: Array<{ keys: Keybinding[]; label: string; labelFirst?: b
 	{ keys: ["app.message.copy"], label: "copy" },
 	{ keys: ["app.tree.editLabel"], label: "label" },
 	{ keys: ["app.tree.toggleLabelTimestamp"], label: "label time" },
+	{ keys: ["app.tree.openExternal"], label: "open" },
 	{
 		keys: [
 			"app.tree.filter.default",
@@ -1355,6 +1362,7 @@ export class TreeSelectorComponent extends Container implements Focusable {
 		onLabelChange?: (entryId: string, label: string | undefined) => void,
 		initialSelectedId?: string,
 		initialFilterMode?: FilterMode,
+		onOpenExternal?: (entryId: string) => void,
 	) {
 		super();
 
@@ -1366,6 +1374,7 @@ export class TreeSelectorComponent extends Container implements Focusable {
 		this.treeList.onCancel = onCancel;
 		this.treeList.onCopy = (text) => this.onCopy?.(text);
 		this.treeList.onLabelEdit = (entryId, currentLabel) => this.showLabelInput(entryId, currentLabel);
+		this.treeList.onOpenExternal = onOpenExternal;
 
 		this.treeContainer = new Container();
 		this.treeContainer.addChild(this.treeList);

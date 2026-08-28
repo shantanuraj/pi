@@ -1,6 +1,6 @@
 import { stripVTControlCharacters } from "node:util";
 import { setKeybindings, visibleWidth } from "@earendil-works/pi-tui";
-import { beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import type {
 	ModelChangeEntry,
@@ -246,6 +246,32 @@ describe("TreeSelectorComponent", () => {
 			// (since that's what we navigated to via parent traversal)
 			selector.handleInput("\x04"); // Ctrl+D
 			expect(list.getSelectedNode()?.entry.id).toBe("user-2");
+		});
+	});
+
+	describe("external editor action", () => {
+		test("opens the selected entry without navigating", () => {
+			setKeybindings(new KeybindingsManager({ "app.tree.openExternal": "x" }));
+			const entries = [userMessage("user-1", null, "hello"), assistantMessage("asst-1", "user-1", "hi")];
+			const tree = buildTree(entries);
+			const onSelect = vi.fn();
+			const onOpenExternal = vi.fn();
+			const selector = new TreeSelectorComponent(
+				tree,
+				"asst-1",
+				24,
+				onSelect,
+				() => {},
+				undefined,
+				undefined,
+				undefined,
+				onOpenExternal,
+			);
+
+			selector.handleInput("x");
+
+			expect(onOpenExternal).toHaveBeenCalledWith("asst-1");
+			expect(onSelect).not.toHaveBeenCalled();
 		});
 	});
 
