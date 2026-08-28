@@ -217,6 +217,7 @@ See `/hotkeys` for the full list. Customize via `~/.pi/agent/keybindings.json`. 
 | Shift+Tab | Cycle thinking level |
 | Ctrl+O | Collapse/expand tool output |
 | Ctrl+T | Collapse/expand thinking blocks |
+| Ctrl+G | Edit current input in external editor |
 | Ctrl+X | Copy the last assistant message; with fullscreen copy-on-select disabled, copy the active text selection |
 
 ### Message Queue
@@ -263,6 +264,7 @@ Use `/session` in interactive mode to see the current session ID before reusing 
 - Filter modes (Ctrl+O): default → no-tools → user-only → labeled-only → all
 - Press Ctrl+X to copy the selected message
 - Press Shift+L to label entries as bookmarks and Shift+T to toggle label timestamps
+- Press Ctrl+G to open a copy of the selected entry in the external editor
 
 **`/fork`** - Create a new session file from a previous user message on the active branch. Opens a selector, copies the active path up to that point, and places the selected prompt in the editor for modification.
 

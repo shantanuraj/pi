@@ -154,6 +154,7 @@ import { TrustSelectorComponent } from "./components/trust-selector.ts";
 import { UserMessageComponent } from "./components/user-message.ts";
 import { UserMessageSelectorComponent } from "./components/user-message-selector.ts";
 import { editInExternalEditor } from "./external-editor.ts";
+import { formatSessionEntryForEditor } from "./message-editor.ts";
 import { refreshModelCatalogs } from "./model-catalog-refresh.ts";
 import { getModelSearchText } from "./model-search.ts";
 import { shareSession } from "./session-share.ts";
@@ -2931,7 +2932,7 @@ export class InteractiveMode {
 		this.defaultEditor.onAction("app.model.select", () => this.showModelSelector());
 		this.defaultEditor.onAction("app.tools.expand", () => this.toggleToolOutputExpansion());
 		this.defaultEditor.onAction("app.thinking.toggle", () => this.toggleThinkingBlockVisibility());
-		this.defaultEditor.onAction("app.editor.external", () => void this.handleOpenExternalEditor());
+		this.defaultEditor.onAction("app.editor.external", () => void this.openExternalEditor());
 		this.defaultEditor.onAction(
 			"app.message.copy",
 			() => void this.handleCopyCommand({ flashConfirmation: true, preferSelection: true }),
@@ -4286,22 +4287,44 @@ export class InteractiveMode {
 		this.showStatus(`Thinking blocks: ${this.hideThinkingBlock ? "hidden" : "visible"}`);
 	}
 
-	private async handleOpenExternalEditor(): Promise<void> {
+	private async openTextInExternalEditor(text: string): Promise<string | undefined> {
 		const editorCmd = this.settingsManager.getExternalEditorCommand();
-		const content = this.editor.getExpandedText?.() ?? this.editor.getText();
 		this.ui.stop();
 		try {
 			const result = await editInExternalEditor({
 				command: editorCmd,
-				content,
+				content: text,
 			});
-			if (result.status === "complete") {
-				this.editor.setText(result.content);
-			}
+			return result.status === "complete" ? result.content : undefined;
 		} finally {
 			this.ui.start();
 			this.ui.requestRender(true);
 		}
+	}
+
+	private async openExternalEditor(): Promise<void> {
+		const currentText = this.editor.getExpandedText?.() ?? this.editor.getText();
+		const newContent = await this.openTextInExternalEditor(currentText);
+		if (newContent !== undefined) {
+			this.editor.setText(newContent);
+			this.ui.requestRender();
+		}
+	}
+
+	private async openSessionEntryInExternalEditor(entryId: string): Promise<void> {
+		const entry = this.sessionManager.getEntry(entryId);
+		if (!entry) {
+			this.showStatus("Selected entry not found");
+			return;
+		}
+
+		const text = formatSessionEntryForEditor(entry, { includeThinking: !this.hideThinkingBlock });
+		if (!text) {
+			this.showStatus("Selected entry has no text to open in external editor");
+			return;
+		}
+
+		await this.openTextInExternalEditor(text);
 	}
 
 	// =========================================================================
@@ -5369,6 +5392,9 @@ export class InteractiveMode {
 				},
 				initialSelectedId,
 				initialFilterMode,
+				(entryId) => {
+					void this.openSessionEntryInExternalEditor(entryId);
+				},
 			);
 			selector.onCopy = async (text) => {
 				if (!text) {
