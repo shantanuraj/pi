@@ -70,6 +70,19 @@ export function formatAssistantMessageForEditor(
 	return joinBlocks(blocks);
 }
 
+export function getLastAssistantEditorText(
+	messages: readonly AgentMessage[],
+	options: MessageEditorFormatOptions = {},
+): string | undefined {
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const message = messages[i];
+		if (message.role !== "assistant") continue;
+		const text = formatAssistantMessageForEditor(message, options);
+		if (text) return text;
+	}
+	return undefined;
+}
+
 function formatAgentMessageForEditor(
 	message: AgentMessage,
 	options: MessageEditorFormatOptions = {},
