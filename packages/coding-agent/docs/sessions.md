@@ -27,7 +27,7 @@ Pi stores entries as a tree, so returning to an earlier point does not erase the
 | `/fork` | Creates a new session from an earlier user message | The alternative should become separate work |
 | `/clone` | Copies the active branch into a new session | You want a separate copy of the current state |
 
-In `/tree`, select a user message to put its text back in the editor. Edit and submit it to create another branch. Selecting an assistant response or another entry continues after that entry with an empty editor.
+In `/tree`, select a user message to put its text back in the editor. Edit and submit it to create another branch. Selecting an assistant response or another entry continues after that entry with an empty editor. Press `Ctrl+G` to open a copy of the selected entry in the external editor; changes are not written back to the session.
 
 When you leave a branch, Pi can summarize it and attach that summary to the branch you enter. This preserves relevant work from the abandoned path without including every message from it.
 

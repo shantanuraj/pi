@@ -295,6 +295,10 @@
       "$ref": "#/$defs/KeybindingValue",
       "description": "Toggle tree label timestamps"
     },
+    "app.tree.openExternal": {
+      "$ref": "#/$defs/KeybindingValue",
+      "description": "Open selected tree entry in external editor"
+    },
     "app.session.togglePath": {
       "$ref": "#/$defs/KeybindingValue",
       "description": "Toggle session path display"
