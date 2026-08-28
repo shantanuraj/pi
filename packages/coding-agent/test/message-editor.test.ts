@@ -1,7 +1,7 @@
 import type { AssistantMessage, Usage } from "@earendil-works/pi-ai";
 import { describe, expect, test } from "vitest";
 import type { SessionEntry } from "../src/core/session-manager.ts";
-import { formatSessionEntryForEditor } from "../src/modes/interactive/message-editor.ts";
+import { formatSessionEntryForEditor, getLastAssistantEditorText } from "../src/modes/interactive/message-editor.ts";
 
 const usage: Usage = {
 	input: 0,
@@ -27,6 +27,23 @@ function assistantMessage(id: string, text: string): AssistantMessage {
 }
 
 describe("message editor formatting", () => {
+	test("gets the last assistant text without tool calls by default", () => {
+		const earlier = assistantMessage("earlier", "earlier response");
+		const latest: AssistantMessage = {
+			...assistantMessage("latest", ""),
+			content: [
+				{ type: "thinking", thinking: "private reasoning" },
+				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "README.md" } },
+				{ type: "text", text: "latest response" },
+			],
+		};
+
+		expect(getLastAssistantEditorText([earlier, latest])).toBe("latest response");
+		expect(getLastAssistantEditorText([latest], { includeThinking: true })).toBe(
+			"<thinking>\nprivate reasoning\n</thinking>\n\nlatest response",
+		);
+	});
+
 	test("formats selected tree entries with tool call details", () => {
 		const entry: SessionEntry = {
 			type: "message",

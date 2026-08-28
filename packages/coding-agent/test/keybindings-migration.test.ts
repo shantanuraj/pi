@@ -75,6 +75,12 @@ describe("keybindings migration", () => {
 		expect(effective["app.tree.openExternal"]).toBe("ctrl+g");
 	});
 
+	it("uses the external editor default for assistant messages", () => {
+		const effective = new KeybindingsManager().getEffectiveConfig();
+
+		expect(effective["app.editor.externalAssistant"]).toBe("ctrl+shift+g");
+	});
+
 	it("loads old key names in memory before the file is rewritten", () => {
 		const agentDir = createAgentDir({
 			selectConfirm: "enter",
