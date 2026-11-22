@@ -1,8 +1,8 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Container } from "@earendil-works/pi-tui";
-import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { ExtensionRunner } from "../src/core/extensions/runner.ts";
 import type { Extension, MarkdownMessageType, MarkdownTransformer } from "../src/core/extensions/types.ts";
 import { InMemorySettingsStorage, SettingsManager } from "../src/core/settings-manager.ts";
@@ -90,6 +90,7 @@ describe("InteractiveMode extension changelog", () => {
 	}
 
 	beforeEach(() => {
+		vi.stubEnv("PI_SKIP_VERSION_CHECK", undefined);
 		tempDir = mkdtempSync(join(tmpdir(), "pi-extension-changelog-"));
 		packageRoot = join(tempDir, "pkg");
 		mkdirSync(packageRoot);
@@ -107,8 +108,31 @@ describe("InteractiveMode extension changelog", () => {
 	});
 
 	afterEach(() => {
+		vi.unstubAllEnvs();
 		rmSync(tempDir, { recursive: true, force: true });
 	});
+
+	test.each([undefined, "1.0.0", "latest"])(
+		"skips changelog notices and settings writes when version checks are disabled (saved version: %s)",
+		async (lastVersion) => {
+			vi.stubEnv("PI_SKIP_VERSION_CHECK", "1");
+			writePackage("1.2.0");
+			const key = getSourcePackageKey(sourceInfo);
+			const settingsPath = join(tempDir, "settings.json");
+			const initialSettings = JSON.stringify({
+				theme: "dark",
+				extensionChangelogVersions: lastVersion === undefined ? undefined : { [key]: lastVersion },
+			});
+			writeFileSync(settingsPath, initialSettings);
+			settingsManager = SettingsManager.create(packageRoot, tempDir);
+
+			expect(display()).toEqual([]);
+			await settingsManager.flush();
+
+			expect(settingsManager.getExtensionChangelogVersion(key)).toBe(lastVersion);
+			expect(readFileSync(settingsPath, "utf-8")).toBe(initialSettings);
+		},
+	);
 
 	test("records the version on first launch without showing the changelog", () => {
 		writePackage("1.0.0");

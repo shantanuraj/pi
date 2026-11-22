@@ -1484,6 +1484,8 @@ export class InteractiveMode {
 	}
 
 	private getExtensionChangelogUpdates(): ExtensionChangelogUpdate[] {
+		if (process.env.PI_SKIP_VERSION_CHECK) return [];
+
 		// Skip changelog for resumed/continued sessions (already have messages)
 		if (this.session.state.messages.length > 0) {
 			return [];
